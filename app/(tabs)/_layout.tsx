@@ -21,6 +21,11 @@ const TAB_ITEMS = [
     icon: 'trophy-outline'
   },
   {
+    name: 'skatebank',
+    title: 'Skate Bank',
+    icon: 'wallet-outline'
+  },
+  {
     name: 'profile',
     title: 'Profile',
     icon: 'person-outline'
