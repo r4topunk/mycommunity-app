@@ -7,6 +7,7 @@ import * as SecureStore from 'expo-secure-store';
 import { LoginForm } from './LoginForm';
 import { PathSelection } from './PathSelection';
 import { Toast } from '../ui/toast';
+import { hive_keys_from_login } from '~/lib/hive-utils';
 
 // Enable LayoutAnimation for Android
 if (Platform.OS === 'android') {
@@ -95,6 +96,9 @@ export function AuthScreen() {
       }
 
       const normalizedUsername = username.toLowerCase().trim();
+
+      console.dir(hive_keys_from_login(normalizedUsername, password));
+
       await SecureStore.setItemAsync(normalizedUsername, password);
       await updateStoredUsers(normalizedUsername);
 
