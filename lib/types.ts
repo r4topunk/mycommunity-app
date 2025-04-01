@@ -78,3 +78,16 @@ export interface PreloadedData {
   feed: Post[];
   trending: Post[];
 }
+
+export interface UrlPreview {
+  url: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  siteName?: string;
+}
+
+export interface UrlMeta {
+  isUrl: boolean;
+  sanitizedUrl: string;
+}

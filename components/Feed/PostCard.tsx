@@ -9,21 +9,24 @@ import { API_BASE_URL } from '~/lib/constants';
 import { Text } from '../ui/text';
 import { MediaPreview } from './MediaPreview';
 import { Toast } from '../ui/toast';
+import { LinkPreview } from './LinkPreview';
 import type { Media, Post } from '../../lib/types';
-import { extractMediaFromBody } from '~/lib/utils';
+import { extractMediaFromBody, validateUrl, isKnownDomain } from '~/lib/utils';
 
 interface PostCardProps {
   post: Post;
-  currentUsername: string | null;
+  currentUsername?: string;
+  onUrlPress?: (url: string) => void;
 }
 
-export function PostCard({ post, currentUsername }: PostCardProps) {
+export function PostCard({ post, currentUsername, onUrlPress }: PostCardProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [isVoting, setIsVoting] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
   const [voteCount, setVoteCount] = useState(post.votes.filter(vote => vote.weight > 0).length);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   // Check if user has already voted on this post
   useEffect(() => {
@@ -32,6 +35,21 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
       setIsLiked(hasVoted);
     }
   }, [post.votes, currentUsername]);
+
+  // Check for URLs in post content to create link previews
+  useEffect(() => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urls = post.body.match(urlRegex);
+    
+    if (urls && urls.length > 0) {
+      const firstUrl = urls[0];
+      const { isUrl, sanitizedUrl } = validateUrl(firstUrl);
+      
+      if (isUrl && isKnownDomain(sanitizedUrl)) {
+        setPreviewUrl(sanitizedUrl);
+      }
+    }
+  }, [post.body]);
 
   const handleMediaPress = useCallback((media: Media) => {
     setSelectedMedia(media);
@@ -105,21 +123,30 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
 
   const media = extractMediaFromBody(post.body);
   const postContent = post.body.replace(/<iframe.*?<\/iframe>|!\[.*?\]\(.*?\)/g, '').trim();
-  const linkRegex = /(https?:\/\/[^\s]+)/g;
-  const postContentWithLinks = postContent.split(linkRegex).map((part, index) => {
-    if (linkRegex.test(part)) {
-      return (
-        <Text
-          key={index}
-          className="text-blue-500 underline"
-          onPress={() => Linking.openURL(part)}
-        >
-          {part}
-        </Text>
-      );
-    }
-    return <Text key={index}>{part}</Text>;
-  });
+
+  const renderText = () => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = postContent.split(urlRegex);
+
+    return (
+      <Text className="text-foreground">
+        {parts.map((part, index) => {
+          if (part.match(urlRegex) && onUrlPress) {
+            return (
+              <Text
+                key={index}
+                className="text-primary underline"
+                onPress={() => onUrlPress(part)}
+              >
+                {part}
+              </Text>
+            );
+          }
+          return <Text key={index}>{part}</Text>;
+        })}
+      </Text>
+    );
+  };
 
   const handleProfilePress = () => {
     router.push({
@@ -150,7 +177,17 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
         </Pressable>
 
         {postContent !== '' && (
-          <Text className="px-2 mb-2">{postContentWithLinks}</Text>
+          <Text className="px-2 mb-2">{renderText()}</Text>
+        )}
+
+        {/* Display LinkPreview if URL is detected in the post */}
+        {previewUrl && onUrlPress && (
+          <View className="px-2 mb-2">
+            <LinkPreview
+              url={previewUrl}
+              onPress={() => onUrlPress(previewUrl)}
+            />
+          </View>
         )}
 
         {media.length > 0 && (

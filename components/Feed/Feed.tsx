@@ -10,6 +10,7 @@ import { useFeed, useTrending, useFollowing } from '~/lib/hooks/useQueries';
 import { Clock } from '~/lib/icons/Clock';
 import { TrendingUp } from '~/lib/icons/TrendingUp';
 import { Sun } from '~/lib/icons/Sun';
+import { WebViewScreen } from './WebViewScreen';
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -19,6 +20,7 @@ import Animated, {
   useSharedValue,
   Easing
 } from 'react-native-reanimated';
+import { validateUrl, isKnownDomain } from '~/lib/utils';
 
 type FeedMode = 'latest' | 'trending' | 'following';
 
@@ -30,6 +32,7 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
   const [feedMode, setFeedMode] = React.useState<FeedMode>('latest');
   const { isDarkColorScheme } = useColorScheme();
   const { username } = useAuth();
+  const [webViewUrl, setWebViewUrl] = React.useState<string | null>(null);
 
   // Animation progress value
   const scale = useSharedValue(1);
@@ -94,9 +97,38 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
   }, []);
 
 
-  const renderItem = React.useCallback(({ item }: { item: Post }) => (
-    <PostCard key={item.permlink} post={item} currentUsername={username} />
-  ), [username]);
+  // Improved URL validation
+  const processUrl = React.useCallback((content: string): { shouldPreview: boolean; url: string } => {
+    const { isUrl, sanitizedUrl } = validateUrl(content);
+    return {
+      shouldPreview: isUrl && isKnownDomain(sanitizedUrl),
+      url: sanitizedUrl
+    };
+  }, []);
+
+  // Function to open the WebView with a specific URL
+  const openWebView = React.useCallback((url: string) => {
+    setWebViewUrl(url);
+  }, []);
+
+  // Function to close the WebView
+  const closeWebView = React.useCallback(() => {
+    setWebViewUrl(null);
+  }, []);
+
+  const renderItem = React.useCallback(({ item }: { item: Post }) => {
+    return (
+      <PostCard 
+        key={item.permlink} 
+        post={item} 
+        currentUsername={username || undefined}
+        onUrlPress={(url) => {
+          const { sanitizedUrl } = validateUrl(url);
+          openWebView(sanitizedUrl);
+        }}
+      />
+    );
+  }, [username, openWebView]);
 
   const keyExtractor = React.useCallback((item: Post) => item.permlink, []);
 
@@ -180,6 +212,11 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
         windowSize={7}
         updateCellsBatchingPeriod={50}
       />
+      
+      {/* WebView overlay when a URL is active */}
+      {webViewUrl && (
+        <WebViewScreen url={webViewUrl} onClose={closeWebView} />
+      )}
     </View>
   );
 

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Media, Post } from './types';
+import type { Media, Post, UrlMeta } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -31,3 +31,28 @@ export function extractMediaFromBody(body: string): Media[] {
 
   return media;
 }
+
+export const validateUrl = (url: string): UrlMeta => {
+  const urlRegex = /^https?:\/\/([^\s<>#%"\,\{\}\\|\\\^\[\]`]+)$/;
+  const trimmedUrl = url.trim();
+  
+  return {
+    isUrl: urlRegex.test(trimmedUrl),
+    sanitizedUrl: trimmedUrl
+  };
+};
+
+export const isKnownDomain = (url: string): boolean => {
+  const knownDomains = [
+    'skatehive.app',
+    'peakd.com',
+    'hive.blog'
+  ];
+  
+  try {
+    const domain = new URL(url).hostname.replace('www.', '');
+    return knownDomains.some(known => domain.includes(known));
+  } catch {
+    return false;
+  }
+};
