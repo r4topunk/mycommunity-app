@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import * as SecureStore from 'expo-secure-store';
 import * as Haptics from 'expo-haptics';
@@ -13,6 +13,8 @@ import type { Media, Post } from '../../lib/types';
 import { extractMediaFromBody } from '~/lib/utils';
 import { FollowButton } from '../Follow/FollowButton';
 // import { MiniFollowButton } from '../Follow/MiniFollowButton';
+import { useComments } from '~/lib/hooks/useComments';
+import { CommentsScreen } from './Comments';
 
 interface PostCardProps {
   post: Post;
@@ -23,15 +25,19 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [isVoting, setIsVoting] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isVoted, setIsVoted] = useState(false);
   const [voteCount, setVoteCount] = useState(post.votes.filter(vote => vote.weight > 0).length);
   const { showToast } = useToast();
+
+  const [showComments, setShowComments] = useState(false);
+  // const { comments, loading: loadingComments } = useComments(post.author, post.permlink);
+  const { comments, refetch } = useComments(post.author, post.permlink);
 
   // Check if user has already voted on this post
   useEffect(() => {
     if (currentUsername && post.votes) {
       const hasVoted = post.votes.some(vote => vote.voter === currentUsername && vote.weight > 0);
-      setIsLiked(hasVoted);
+      setIsVoted(hasVoted);
     }
   }, [post.votes, currentUsername]);
 
@@ -64,8 +70,8 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
       // Optimistically update the UI
-      const previousLikedState = isLiked;
-      setIsLiked(!isLiked);
+      const previousLikedState = isVoted;
+      setIsVoted(!isVoted);
       setVoteCount(prevCount => previousLikedState ? prevCount - 1 : prevCount + 1);
 
       const response = await fetch(`${API_BASE_URL}/vote`, {
@@ -85,13 +91,13 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
       if (!response.ok) {
         const error = await response.text();
         // Revert the optimistic update if the request failed
-        setIsLiked(previousLikedState);
+        setIsVoted(previousLikedState);
         setVoteCount(prevCount => previousLikedState ? prevCount + 1 : prevCount - 1);
         throw new Error(error);
       }
     } catch (error) {
       // console.error('Vote error:', error);
-      
+
       let errorMessage = 'Failed to vote';
       if (error instanceof Error) {
         try {
@@ -105,7 +111,7 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
           errorMessage = error.message;
         }
       }
-      
+
       showToast(errorMessage, 'error');
     } finally {
       setIsVoting(false);
@@ -128,16 +134,16 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
 
   const media = extractMediaFromBody(post.body);
   const postContent = post.body.replace(/<iframe.*?<\/iframe>|!\[.*?\]\(.*?\)/g, '').trim();
-  
+
   // Process post content to handle @username mentions and URLs
   const renderPostContent = () => {
     if (!postContent) return null;
-    
+
     // First, split by URLs
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     // Then process @username mentions in each non-URL part
     const mentionRegex = /(@[a-zA-Z0-9.-]+)/g;
-    
+
     return postContent.split(linkRegex).map((part, index) => {
       // If this part is a URL, make it a clickable link
       if (linkRegex.test(part)) {
@@ -151,14 +157,14 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
           </Text>
         );
       }
-      
+
       // If not a URL, process for @username mentions
       const segments = part.split(mentionRegex);
       if (segments.length === 1) {
         // No mentions in this part
         return <Text key={`text-${index}`} className="text-lg">{part}</Text>;
       }
-      
+
       // Process parts with mentions
       return (
         <Text key={`text-${index}`} className="text-lg">
@@ -192,7 +198,7 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
   };
 
   return (
-    <View className="w-full mb-4">
+    <View className="w-full mb-4 min-h-[200px]">
       <Pressable onPress={handleProfilePress} className="flex-row items-center justify-between mb-3 px-2">
         <View className="flex-row items-center">
           <View className="h-12 w-12 mr-3 rounded-full overflow-hidden">
@@ -202,9 +208,9 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
               alt={`${post.author}'s avatar`}
             />
             <FollowButton
-                currentUsername={currentUsername}
-                profileUsername={post.author}
-                // type="mini"
+              currentUsername={currentUsername}
+              profileUsername={post.author}
+            // type="mini"
             />
           </View>
           <View>
@@ -232,38 +238,56 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
         />
       )}
 
-      <View className="flex-row justify-between items-center mx-2">
-        <Text className={`font-bold text-xl ${parseFloat(calculateTotalValue(post)) > 0 ? 'text-green-500' : 'text-gray-500'}`}>
-          ${calculateTotalValue(post)}
-        </Text>
-        <View>
-          <Pressable
-            onPress={handleVote}
-            className={`flex-row items-center gap-1 ${isVoting ? 'opacity-70' : ''}`}
-            disabled={isVoting}
-          >
-            {isVoting ? (
-              <ActivityIndicator 
-                size="small" 
-                color={isLiked ? "#32CD32" : "#666666"}
-                style={{ marginRight: 4, marginLeft: 4 }}
-              />
-            ) : (
-              <>
-                <Text className={`text-xl font-bold ${isLiked ? 'text-green-500' : 'text-gray-600'}`}>
-                  {voteCount}
-                </Text>
-                <FontAwesome
-                  name={"arrow-up"}
-                  size={20}
-                  color={isLiked ? "#32CD32" : "#666666"}
-                  style={{ marginRight: 4 }}
+      <View className="flex-1 justify-end">
+        <View className="flex-row justify-between items-center mx-2">
+          <Text className={`font-bold text-xl ${parseFloat(calculateTotalValue(post)) > 0 ? 'text-green-500' : 'text-gray-500'}`}>
+            ${calculateTotalValue(post)}
+          </Text>
+          <View className="flex-row items-center space-x-4">
+            {/* Comment Icon */}
+            <Pressable onPress={() => setShowComments(!showComments)} className="flex-row items-center gap-1 mr-8">
+              <FontAwesome5 name="comment" size={20} color="#666" />
+              <Text className="text-gray-600 text-base">{comments.length}</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleVote}
+              className={`flex-row items-center gap-1 ${isVoting ? 'opacity-70' : ''}`}
+              disabled={isVoting}
+            >
+              {isVoting ? (
+                <ActivityIndicator
+                  size="small"
+                  color={isVoted ? "#32CD32" : "#666666"}
+                  style={{ marginRight: 4, marginLeft: 4 }}
                 />
-              </>
-            )}
-          </Pressable>
+              ) : (
+                <>
+                  <Text className={`text-xl font-bold ${isVoted ? 'text-green-500' : 'text-gray-600'}`}>
+                    {voteCount}
+                  </Text>
+                  <FontAwesome
+                    name={"arrow-up"}
+                    size={20}
+                    color={isVoted ? "#32CD32" : "#666666"}
+                    style={{ marginRight: 4 }}
+                  />
+                </>
+              )}
+            </Pressable>
+          </View>
         </View>
       </View>
+
+      {showComments && (
+        <CommentsScreen
+          postAuthor={post.author}
+          postPermlink={post.permlink}
+          comments={comments}
+          onClose={() => setShowComments(false)}
+          onRefreshComments={refetch}
+        />
+      )}
+
     </View>
   );
 }

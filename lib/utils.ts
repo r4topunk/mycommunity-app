@@ -14,7 +14,10 @@ export function extractMediaFromBody(body: string): Media[] {
   if (imageMatches) {
     imageMatches.forEach(match => {
       const url = match.match(/\((.*?)\)/)?.[1];
-      if (url) media.push({ type: 'image', url });
+      if (url) {
+        const isGif = url.toLowerCase().endsWith('.gif');
+        media.push({ type: isGif ? 'gif' : 'image', url });
+      }
     });
   }
 

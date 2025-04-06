@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, RefreshControl, FlatList, TouchableOpacity } from 'react-native';
 import { Text } from '../ui/text';
 import { PostCard } from './PostCard';
@@ -16,6 +16,7 @@ import Animated, {
   withSequence,
   useSharedValue
 } from 'react-native-reanimated';
+
 
 type FeedMode = 'latest' | 'trending' | 'following';
 
@@ -141,8 +142,8 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
           className="h-10 w-10 items-center justify-center"
           accessibilityRole="button"
           accessibilityLabel={`Switch to ${feedMode === 'latest' ? 'trending' :
-              feedMode === 'trending' ? 'following' :
-                'latest'
+            feedMode === 'trending' ? 'following' :
+              'latest'
             } posts`}
         >
           {feedMode === 'latest' ? (

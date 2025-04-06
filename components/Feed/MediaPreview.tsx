@@ -23,6 +23,7 @@ export function MediaPreview({
   isModalVisible,
   onCloseModal,
 }: MediaPreviewProps) {
+  // console.log('Media Type', media[0].type);
   // Track dimensions for each image to maintain proper aspect ratio
   const [imageDimensions, setImageDimensions] = useState<Record<number, { width: number, height: number }>>({});
   // Track which videos are playing
@@ -39,7 +40,7 @@ export function MediaPreview({
         ...prev,
         [index]: true
       }));
-      
+
       // Mark this video as interacted with
       setInteractedVideos(prev => ({
         ...prev,
@@ -52,7 +53,7 @@ export function MediaPreview({
   const isVideoPlaying = (index: number) => {
     return !!playingVideos[index];
   };
-  
+
   // Determine if a specific video has been interacted with
   const hasVideoBeenInteracted = (index: number) => {
     return !!interactedVideos[index];
@@ -68,10 +69,10 @@ export function MediaPreview({
 
   // Calculate display width based on number of media items
   const getContainerWidth = (index: number) => {
-    const containerWidth = media.length === 1 
+    const containerWidth = media.length === 1
       ? screenWidth - 16 // Full width (minus padding)
       : (screenWidth - 24) / 2; // Half width (minus padding and gap)
-    
+
     return containerWidth;
   };
 
@@ -79,11 +80,11 @@ export function MediaPreview({
   const getImageHeight = (index: number) => {
     const dimensions = imageDimensions[index];
     if (!dimensions) return 200; // Default height until image loads
-    
+
     const containerWidth = getContainerWidth(index);
     const aspectRatio = dimensions.width / dimensions.height;
     const calculatedHeight = containerWidth / aspectRatio;
-    
+
     // Apply maximum height constraint (3/4 of screen height)
     return Math.min(calculatedHeight, MAX_IMAGE_HEIGHT);
   };
@@ -99,24 +100,29 @@ export function MediaPreview({
             style={{ height: item.type === 'video' ? 200 : getImageHeight(index) }}
           >
             {item.type === 'video' ? (
-              // Only make it a Pressable if the video hasn't been interacted with yet
               hasVideoBeenInteracted(index) ? (
-                // After interaction, just render the video player without pressable wrapper
                 <VideoPlayer url={item.url} playing={isVideoPlaying(index)} />
               ) : (
-                // Before first interaction, use Pressable with play button overlay
-                <Pressable 
-                  className="w-full h-full" 
+                <Pressable
+                  className="w-full h-full"
                   onPress={() => handleInitialPlay(index)}
                 >
                   <VideoPlayer url={item.url} playing={false} />
-                  
-                  {/* Play button overlay - only shown before first interaction */}
                   <View className="absolute inset-0 flex items-center justify-center bg-black/20">
                     <FontAwesome name="play-circle" size={50} color="white" />
                   </View>
                 </Pressable>
               )
+            ) : item.type === 'gif' ? (
+              <Image
+                source={{ uri: item.url }}
+                className="w-full h-full"
+                resizeMode="cover"
+                onLoad={(e) => {
+                  const { width, height } = e.nativeEvent.source;
+                  handleImageLoad(index, width, height);
+                }}
+              />
             ) : (
               <Pressable
                 onPress={() => onMediaPress(item)}
