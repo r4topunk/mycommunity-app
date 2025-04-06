@@ -40,6 +40,7 @@ export default function Index() {
 
   const effectIds = pop_communities.map(([_, __, effect]) => effect || "matrix");
   const effectId = effectIds[effectIndex] ?? "matrix";
+  // console.log("Effect ID:", effectId);
   const BackgroundEffect = getLoadingEffect(effectId).component;
 
   React.useEffect(() => {

@@ -14,7 +14,7 @@ export const PopularCommunitiesCarousel: React.FC<Props> = ({ onIndexChange }) =
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
     onIndexChange(index);
-    console.log("Current index:", index);
+    // console.log("Current index:", index);
   };
 
   return (

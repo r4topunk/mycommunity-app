@@ -13,9 +13,9 @@ export const pop_communities2: [string, string][] = [
 ];
 
 export const pop_communities: [string, string, string][] = [
-  ["hive-173115", "SkateHive", "matrix"],
-  ["hive-173115", "Weed", "videobg"],
-  ["hive-173115", "Lifestyle", "skate"],
-  ["hive-173115", "More", "videobg"],
+  ["hive-173115", "SkateHive", "videobg"],
+  ["hive-173116", "Weed", "matrix"],
+  ["hive-173117", "Lifestyle", "sunball"],
+  ["hive-173118", "More", "zeroone"],
 ];
 

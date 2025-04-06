@@ -18,7 +18,7 @@ import { useProfile, useUserFeed } from "~/lib/hooks/useQueries";
 import { PostCard } from "~/components/Feed/PostCard";
 import type { Post } from "~/lib/types";
 import { LoadingScreen } from "~/components/ui/LoadingScreen";
-import { PopCommunitiesSelector } from "~/components/ PopCommunitiesSelector";
+import { PopCommunitiesSelector } from "~/components/PopCommunitiesSelector";
 import { FollowButton } from "~/components/Follow/FollowButton";
 
 export default function ProfileScreen() {
