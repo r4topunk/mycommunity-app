@@ -49,13 +49,18 @@ export default function ProfileScreen() {
   const renderProfileImage = () => {
     if (profileUsername === "SPECTATOR") {
       return (
-        <View className="w-24 h-24 rounded-full bg-foreground/10 flex items-center justify-center">
+        <View
+          className="w-24 h-24 rounded-full bg-foreground/10 items-center justify-center"
+          style={{
+            borderWidth: 3,
+            borderColor: isDarkColorScheme ? "#ffffff20" : "#00000020",
+          }}>
           <Ionicons
             name="eye-outline"
             size={48}
             color={"#34C759"}
           />
-        </View>
+        </View >
       );
     }
 
@@ -121,7 +126,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-background"
+      className="flex-1 p-4 bg-background"
       refreshControl={
         <RefreshControl refreshing={isLoadingFeed} onRefresh={refetchFeed} />
       }
@@ -146,13 +151,15 @@ export default function ProfileScreen() {
 
 
       {/* Profile Info Section */}
-      <View className="items-center gap-2 pt-6">
+      <View className="items-center mt-2 mb-4">
         {renderProfileImage()}
         <View className="items-center">
-          <Text className="text-3xl font-bold">
+          <Text className="text-3xl font-bold mt-2">
             {profileData?.posting_metadata?.profile?.name || profileData.name}
           </Text>
-          <Text className="text-muted-foreground">@{profileUsername}</Text>
+          {profileUsername !== "SPECTATOR" && (
+            <Text className="text-muted-foreground">@{profileUsername}</Text>
+          )}
         </View>
         {profileData?.posting_metadata?.profile?.about && (
           <Text className="text-center">
@@ -199,7 +206,6 @@ export default function ProfileScreen() {
       )}
 
       {(profileUsername !== "SPECTATOR") && (
-
         <View className="flex-row justify-around bg-card p-4 rounded-lg">
           <View key={'hp'} className="items-center">
             <Text

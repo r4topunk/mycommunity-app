@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { View } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useColorScheme } from "~/lib/useColorScheme";
@@ -49,17 +50,17 @@ export function SpectatorInfoBase({
       </View>
 
       <View className="w-full flex flex-col gap-4">
-      {infoItems.map((item, index) => (
-        <View key={index} className="w-full p-4 bg-foreground/5 rounded-xl">
-          <View className="items-center flex flex-col gap-1 px-4">
-            <Ionicons name={item.icon} size={24} color={iconColor} />
-            <Text className="font-bold mt-2 uppercase text-lg">{item.title}</Text>
+        {infoItems.map((item, index) => (
+          <View key={index} className="w-full p-4 bg-foreground/5 rounded-xl">
+            <View className="items-center flex flex-col gap-1 px-4">
+              <Ionicons name={item.icon} size={24} color={iconColor} />
+              <Text className="font-bold mt-2 uppercase text-lg">{item.title}</Text>
+            </View>
+            <View>
+              <Text className="text-muted-foreground text-center">{item.text}</Text>
+            </View>
           </View>
-          <View>
-            <Text className="text-muted-foreground text-center">{item.text}</Text>
-          </View>
-        </View>
-      ))}
+        ))}
       </View>
     </>
   );

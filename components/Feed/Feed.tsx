@@ -112,10 +112,10 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
 
   const keyExtractor = React.useCallback((item: Post) => item.permlink, []);
 
-  const title =
-    feedMode === 'latest' ? 'Latest' :
-      feedMode === 'trending' ? 'Trending' :
-        'Following';
+  // const title =
+  //   feedMode === 'latest' ? 'Latest' :
+  //     feedMode === 'trending' ? 'Trending' :
+  //       'Following';
 
   const buttonAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }]
@@ -129,10 +129,12 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
   const ListHeaderComponent = React.useCallback(() => (
     <View className="flex-row items-center justify-between mb-4 px-3">
       <Animated.View style={textAnimatedStyle}>
-        <Text className="text-3xl font-bold">{title}</Text>
+        <Text className="text-xl font-bold" style={{ textTransform: 'capitalize' }}>
+          {feedMode}
+        </Text>
       </Animated.View>
       <Animated.View
-        className={`rounded-full bg-card border border-muted/70`}
+        className="rounded-full bg-card border border-muted/70"
         style={buttonAnimatedStyle}
       >
         <TouchableOpacity
@@ -141,8 +143,8 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
           className="h-10 w-10 items-center justify-center"
           accessibilityRole="button"
           accessibilityLabel={`Switch to ${feedMode === 'latest' ? 'trending' :
-              feedMode === 'trending' ? 'following' :
-                'latest'
+            feedMode === 'trending' ? 'following' :
+              'latest'
             } posts`}
         >
           {feedMode === 'latest' ? (
@@ -155,7 +157,7 @@ export function Feed({ refreshTrigger = 0 }: FeedProps) {
         </TouchableOpacity>
       </Animated.View>
     </View>
-  ), [title, feedMode, isDarkColorScheme, handleToggle, buttonAnimatedStyle, textAnimatedStyle]);
+  ), [feedMode, isDarkColorScheme, handleToggle, buttonAnimatedStyle, textAnimatedStyle]);
 
   const ItemSeparatorComponent = React.useCallback(() => (
     <View className="h-0 my-4 border border-muted" />

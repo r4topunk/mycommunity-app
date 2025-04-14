@@ -1,13 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { View, TouchableOpacity, Linking } from "react-native";
 import { Text } from "~/components/ui/text";
 import { useColorScheme } from "~/lib/useColorScheme";
-import { Button } from "../ui/button";
 import { VideoPlayer } from '~/components/Feed/VideoPlayer';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { IconName, SpectatorInfoBase } from "./SpectatorInfoBase";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import { Ionicons } from "@expo/vector-icons";
 
 interface SocialLink {
   name: string;
@@ -26,21 +25,27 @@ export function ProfileSpectatorInfo() {
   const socialLinks: SocialLink[] = [
     { 
       name: 'Twitter', 
-      icon: 'twitter', 
+      icon: 'logo-twitter', 
       color: '#1DA1F2', 
       url: 'https://twitter.com/skatehive' 
     },
     { 
       name: 'Instagram', 
-      icon: 'instagram', 
+      icon: 'logo-instagram', 
       color: '#E4405F', 
       url: 'https://instagram.com/skatehive' 
     },
     { 
       name: 'GitHub', 
-      icon: 'github', 
+      icon: 'logo-github', 
       color: isDarkColorScheme ? '#FFFFFF' : '#333333', 
       url: 'https://github.com/skatehive' 
+    },
+    { 
+      name: 'Discord', 
+      icon: "logo-discord" as IconName,
+      color: isDarkColorScheme ? '#FFFFFF' : '#333333', 
+      url: 'https://discord.gg/eAQfS97wHK' 
     }
   ];
   
@@ -74,8 +79,8 @@ export function ProfileSpectatorInfo() {
   ];
 
   return (
-    <Card className="w-full mt-4">
-      <CardContent className="py-4">
+    <View className="w-full mt-4">
+      <View>
         <SpectatorInfoBase
           iconColor="#34C759"
           title="No Pass? No Session."
@@ -91,7 +96,7 @@ export function ProfileSpectatorInfo() {
             playing={false}
           />
         </View>
-      </CardContent>
+      </View>
         
       <CardFooter className="flex-col items-center">
         <CardTitle className="mb-4">
@@ -107,13 +112,13 @@ export function ProfileSpectatorInfo() {
               accessibilityRole="link"
             >
               <View className="flex flex-col items-center gap-2">
-                <Icon name={link.icon} size={32} color={link.color} />
+                <Ionicons name={link.icon} size={32} color={link.color} />
                 <Text className="text-sm text-center text-muted-foreground">{link.name}</Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
       </CardFooter>
-    </Card>
+    </View>
   );
 }

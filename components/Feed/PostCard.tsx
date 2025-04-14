@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import * as Haptics from 'expo-haptics';
 import { Image, Pressable, View, Linking, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { API_BASE_URL } from '~/lib/constants';
+import { API_BASE_URL, avatarSize } from '~/lib/constants';
 import { Text } from '../ui/text';
 import { MediaPreview } from './MediaPreview';
 import { useToast } from '~/lib/toast-provider';
@@ -89,7 +89,7 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
       }
     } catch (error) {
       // console.error('Vote error:', error);
-      
+
       let errorMessage = 'Failed to vote';
       if (error instanceof Error) {
         try {
@@ -103,7 +103,7 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
           errorMessage = error.message;
         }
       }
-      
+
       showToast(errorMessage, 'error');
     } finally {
       setIsVoting(false);
@@ -126,16 +126,16 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
 
   const media = extractMediaFromBody(post.body);
   const postContent = post.body.replace(/<iframe.*?<\/iframe>|!\[.*?\]\(.*?\)/g, '').trim();
-  
+
   // Process post content to handle @username mentions and URLs
   const renderPostContent = () => {
     if (!postContent) return null;
-    
+
     // First, split by URLs
     const linkRegex = /(https?:\/\/[^\s]+)/g;
     // Then process @username mentions in each non-URL part
     const mentionRegex = /(@[a-zA-Z0-9.-]+)/g;
-    
+
     return postContent.split(linkRegex).map((part, index) => {
       // If this part is a URL, make it a clickable link
       if (linkRegex.test(part)) {
@@ -149,14 +149,14 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
           </Text>
         );
       }
-      
+
       // If not a URL, process for @username mentions
       const segments = part.split(mentionRegex);
       if (segments.length === 1) {
         // No mentions in this part
         return <Text key={`text-${index}`} className="text-lg">{part}</Text>;
       }
-      
+
       // Process parts with mentions
       return (
         <Text key={`text-${index}`} className="text-lg">
@@ -193,20 +193,21 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
     <View className="w-full mb-4">
       <Pressable onPress={handleProfilePress} className="flex-row items-center justify-between mb-3 px-2">
         <View className="flex-row items-center">
-          <View className="h-12 w-12 mr-3 rounded-full overflow-hidden">
+          <View className="mr-3 rounded-full overflow-hidden">
             <Image
               source={{ uri: `https://images.ecency.com/webp/u/${post.author}/avatar/small` }}
               className="w-full h-full border border-muted rounded-full"
+              style={{ width: avatarSize, height: avatarSize }}
               alt={`${post.author}'s avatar`}
             />
           </View>
           <View>
-            <Text className="font-bold text-lg">@{post.author}</Text>
+            <Text className="font-bold text">{post.author}</Text>
+            <Text className="text-gray-500 text-sm">
+              {formatDistanceToNow(new Date(post.created), { addSuffix: true })}
+            </Text>
           </View>
         </View>
-        <Text className="text-gray-500">
-          {formatDistanceToNow(new Date(post.created), { addSuffix: true })}
-        </Text>
       </Pressable>
 
       {postContent !== '' && (
@@ -236,8 +237,8 @@ export function PostCard({ post, currentUsername }: PostCardProps) {
             disabled={isVoting}
           >
             {isVoting ? (
-              <ActivityIndicator 
-                size="small" 
+              <ActivityIndicator
+                size="small"
                 color={isLiked ? "#32CD32" : "#666666"}
                 style={{ marginRight: 4, marginLeft: 4 }}
               />
