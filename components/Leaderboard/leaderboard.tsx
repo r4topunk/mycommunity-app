@@ -27,7 +27,8 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
     if (!leaderboardData)
       return { topSkaters: [], surroundingUsers: [], currentUserInfo: null };
 
-    const top10 = leaderboardData.slice(0, 10).map((user, index) => ({
+    // Updated the map and filter functions to include explicit type annotations for parameters
+    const top10 = leaderboardData.slice(0, 10).map((user: LeaderboardUserInfo, index: number) => ({
       position: index + 1,
       id: user.id,
       hive_author: user.hive_author,
@@ -39,7 +40,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
 
     if (currentUsername) {
       const userIndex = leaderboardData.findIndex(
-        (user) => user.hive_author === currentUsername
+        (user: LeaderboardUserInfo) => user.hive_author === currentUsername
       );
 
       if (userIndex !== -1) {
@@ -56,13 +57,13 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
 
           surroundingUsers = leaderboardData
             .slice(startIndex, endIndex + 1)
-            .map((user, idx) => ({
+            .map((user: LeaderboardUserInfo, idx: number) => ({
               position: startIndex + idx + 1,
               id: user.id,
               hive_author: user.hive_author,
               points: user.points,
             }))
-            .filter((user) => user.hive_author !== currentUsername); // Removendo duplicata do usuário atual
+            .filter((user: LeaderboardUserInfo) => user.hive_author !== currentUsername); // Removendo duplicata do usuário atual
 
           surroundingUsers = [...surroundingUsers, currentUserInfo].sort(
             (a, b) => a.position - b.position
@@ -97,7 +98,7 @@ export function Leaderboard({ currentUsername }: LeaderboardProps) {
       </View>
 
       <View className="divide-solid divide-cyan-200">
-        {topSkaters.map((skater, index) => (
+        {topSkaters.map((skater: LeaderboardUserInfo, index: number) => (
           <LeaderboardItem
             key={skater.id}
             skater={skater}
