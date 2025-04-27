@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mycommunity-app",
+    "name": "SkateHive",
     "slug": "skatehive-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,7 +17,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.skatehive.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
